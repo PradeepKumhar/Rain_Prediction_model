@@ -38,10 +38,16 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# 📈 Model Evaluation Metrics
+model_accuracy = 92.3  # Manually set, ya evaluate_model.py se le sakte ho
+model_auc = 0.89
+
 # 🏠 Sidebar
 st.sidebar.image("https://cdn-icons-png.flaticon.com/512/1163/1163657.png", width=100)
-st.sidebar.title("🔍 About")
-st.sidebar.info("Predict whether it will rain today using ML.\n\n✅ **Fast & Accurate**\n✅ **User-Friendly UI**")
+st.sidebar.header("📈 Model Insights")
+st.sidebar.info(f"🎯 **Accuracy:** {model_accuracy}%")
+st.sidebar.info(f"📊 **AUC Score:** {model_auc}")
+st.sidebar.info("🧠 **Model: Logistic Regression**")
 
 # 🌧 **Main App Heading**
 st.markdown("<h1 style='text-align: center; color: #0D47A1;'>🌧 Rainfall Prediction App</h1>", unsafe_allow_html=True)
@@ -71,13 +77,26 @@ if st.button("🔍 Predict Rainfall"):
     try:
         features = np.array([[temperature, humidity, wind_speed, pressure, cloud_cover, precipitation]])
         scaled_features = scaler.transform(features)
+        prediction_prob = model.predict_proba(scaled_features)[0]  # Confidence Score
         prediction = model.predict(scaled_features)[0]
 
-        # 🌤 Show Prediction Result
+        confidence = round(max(prediction_prob) * 100, 2)  # Convert to percentage
+
+        # 🌤 **Show Prediction Result with Colors**
         if prediction == 1:
-            st.success("🌧 **Yes, it will rain today!** 🌧")
+            if confidence > 80:
+                st.success(f"✅ 🌧 **Yes, it will rain today! ({confidence}% confidence)**")
+            elif confidence > 50:
+                st.warning(f"⚠️ 🌧 **Possible Rain ({confidence}% confidence)**")
+            else:
+                st.error(f"❗🌧 **Low Probability of Rain ({confidence}% confidence)**")
         else:
-            st.warning("🌤 **No, it won't rain today.** ☀️")
+            if confidence > 80:
+                st.success(f"✅ 🌤 **No, it won't rain today! ({confidence}% confidence)**")
+            elif confidence > 50:
+                st.warning(f"⚠️ 🌤 **Low chance of rain ({confidence}% confidence)**")
+            else:
+                st.error(f"❗🌤 **Prediction Uncertain ({confidence}% confidence)**")
 
     except Exception as e:
         st.error(f"⚠️ Error: {str(e)}")
