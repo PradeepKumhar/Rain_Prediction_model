@@ -1,8 +1,11 @@
 import streamlit as st
 import joblib
+import joblib
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
+# Load Model & Scaler
 # Load Model & Scaler
 model = joblib.load("rain_prediction_model.joblib")
 scaler = joblib.load("scaler.joblib")
@@ -48,8 +51,12 @@ st.markdown("<h1 style='text-align: center; color: #0D47A1;'>🌧 Rainfall Predi
 st.write("### Enter Weather Details Below ⬇️")
 
 # 🎛 User Inputs
+# 🎛 User Inputs
 col1, col2 = st.columns(2)
 with col1:
+    temperature = st.number_input("🌡 Temperature (°C)", min_value=-10.0, max_value=50.0, value=25.0, step=0.1)
+    wind_speed = st.number_input("🌬 Wind Speed (km/h)", min_value=0.0, max_value=100.0, value=10.0, step=0.1)
+    cloud_cover = st.number_input("☁ Cloud Cover (%)", min_value=0.0, max_value=100.0, value=50.0, step=0.1)
     temperature = st.number_input("🌡 Temperature (°C)", min_value=-10.0, max_value=50.0, value=25.0, step=0.1)
     wind_speed = st.number_input("🌬 Wind Speed (km/h)", min_value=0.0, max_value=100.0, value=10.0, step=0.1)
     cloud_cover = st.number_input("☁ Cloud Cover (%)", min_value=0.0, max_value=100.0, value=50.0, step=0.1)
@@ -58,7 +65,17 @@ with col2:
     humidity = st.number_input("💧 Humidity (%)", min_value=0.0, max_value=100.0, value=60.0, step=0.1)
     pressure = st.number_input("🌀 Pressure (hPa)", min_value=800.0, max_value=1100.0, value=1010.0, step=0.1)
     precipitation = st.number_input("🌧 Precipitation (mm)", min_value=0.0, max_value=500.0, value=2.0, step=0.1)
+    pressure = st.number_input("🌀 Pressure (hPa)", min_value=800.0, max_value=1100.0, value=1010.0, step=0.1)
+    precipitation = st.number_input("🌧 Precipitation (mm)", min_value=0.0, max_value=500.0, value=2.0, step=0.1)
 
+# 📊 **Weather Trends - Simple Visualization**
+st.subheader("📊 Weather Trends")
+fig, ax = plt.subplots(figsize=(6, 3))
+ax.bar(["Temp", "Humidity", "Wind", "Pressure", "Cloud", "Rain"], 
+       [temperature, humidity, wind_speed, pressure, cloud_cover, precipitation], color=['blue', 'green', 'red', 'purple', 'orange', 'cyan'])
+st.pyplot(fig)
+
+# 🧠 **Prediction Logic**
 # 📊 **Weather Trends - Simple Visualization**
 st.subheader("📊 Weather Trends")
 fig, ax = plt.subplots(figsize=(6, 3))
@@ -78,6 +95,18 @@ if st.button("🔍 Predict Rainfall"):
             st.success("🌧 **Yes, it will rain today!** 🌧")
         else:
             st.warning("🌤 **No, it won't rain today.** ☀️")
+    try:
+        features = np.array([[temperature, humidity, wind_speed, pressure, cloud_cover, precipitation]])
+        scaled_features = scaler.transform(features)
+        prediction = model.predict(scaled_features)[0]
 
+        # 🌤 Show Prediction Result
+        if prediction == 1:
+            st.success("🌧 **Yes, it will rain today!** 🌧")
+        else:
+            st.warning("🌤 **No, it won't rain today.** ☀️")
+
+    except Exception as e:
+        st.error(f"⚠️ Error: {str(e)}")
     except Exception as e:
         st.error(f"⚠️ Error: {str(e)}")
